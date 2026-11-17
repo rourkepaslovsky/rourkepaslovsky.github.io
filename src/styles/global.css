@@ -231,7 +231,7 @@ a:hover {
   transform: scale(2);
 }
 
-/* Shown only when the device asks for reduced motion: the page is still by default, and this opts back in. */
+/* Desktop only, and only when the device asks for reduced motion: the page is still, and this opts back in. */
 .motion-toggle {
   position: fixed;
   right: var(--gutter);
@@ -1123,12 +1123,6 @@ a.cite:hover {
     display: none;
   }
 
-  .motion-toggle {
-    right: 50%;
-    bottom: 2.4rem;
-    transform: translateX(50%);
-  }
-
   .days-head {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1185,7 +1179,8 @@ a.cite:hover {
   initial-value: 130%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+/* On by default; off only for a desktop that asks for reduced motion (phones always animate). */
+@media (prefers-reduced-motion: no-preference), (pointer: coarse), (max-width: 56rem) {
   html {
     scroll-behavior: smooth;
   }

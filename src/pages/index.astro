@@ -278,8 +278,10 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
   const raw = document.querySelector('#dots-data')?.textContent;
 
   if (canvas && raw) {
-    // A device that asks for less motion gets a still page, and a switch to opt back in.
-    const asksForLess = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Phones and tablets always get the motion: it is the site. A desktop that asks for
+    // less motion gets a still page, and a switch to opt back in.
+    const mobile = matchMedia('(pointer: coarse), (max-width: 56rem)').matches;
+    const asksForLess = !mobile && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const remembered = () => {
       try {
         return localStorage.getItem('motion');
