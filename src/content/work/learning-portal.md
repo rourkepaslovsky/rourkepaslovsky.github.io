@@ -5,6 +5,17 @@ client: "An education non-profit"
 role: "Sole engineer — design, build, deployment"
 period: "July to October 2026"
 stack: ["Next.js", "TypeScript", "Supabase (Postgres, pgvector)", "Vercel AI SDK (Anthropic & OpenAI)", "Auth.js", "Voyage embeddings", "MDX", "Vercel"]
+flow:
+  - step: "Source PDFs are transformed"
+    detail: "A pipeline turns course material into lesson MDX and knowledge-check JSON."
+  - step: "A human reviews"
+    detail: "Generated content lands in a staging area. Nothing goes straight to students."
+  - step: "Students learn"
+    detail: "Interactive lessons, plus a tutor grounded on the programme's own content in three languages."
+  - step: "AI grades open answers"
+    detail: "Typed answers are graded against rubrics derived from the source material."
+  - step: "Staff see the gaps"
+    detail: "A completions funnel and flagged unanswered questions feed back into the curriculum."
 order: 4
 ---
 

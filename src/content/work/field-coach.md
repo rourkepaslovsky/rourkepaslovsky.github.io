@@ -5,6 +5,17 @@ client: "A mobile financial-services provider"
 role: "Sole engineer — design, build, deployment"
 period: "August to November 2026"
 stack: ["Next.js", "TypeScript", "Supabase (Postgres, pgvector)", "Claude (Anthropic API)", "Voyage embeddings", "PWA", "Vercel"]
+flow:
+  - step: "Material is ingested"
+    detail: "Client-approved training content goes into a curated vector store."
+  - step: "An agent asks"
+    detail: "A free-text question or a guide tile, in any of four languages."
+  - step: "The coach answers"
+    detail: "Only from retrieved passages, with the source cited. No passage, no answer."
+  - step: "The language pack checks"
+    detail: "isiZulu and isiXhosa answers pass a wordbook, a checker and a repair pass."
+  - step: "Gaps are reported"
+    detail: "Usage and unanswered questions feed a weekly performance dashboard."
 order: 2
 ---
 

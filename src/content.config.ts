@@ -11,6 +11,10 @@ const work = defineCollection({
     role: z.string().default('Design, engineering, deployment'),
     period: z.string(),
     stack: z.array(z.string()),
+    // Optional "How it works" diagram: the system's steps, in order.
+    flow: z
+      .array(z.object({ step: z.string(), detail: z.string() }))
+      .optional(),
     order: z.number().default(99),
     draft: z.boolean().default(false),
   }),

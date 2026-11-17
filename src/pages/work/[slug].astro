@@ -1,50 +1,98 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getWork, toSources } from '../../lib/work';
 
 export async function getStaticPaths() {
-  const work = await getCollection('work', ({ data }) => !data.draft);
-  return work.map((entry) => ({
+  const work = await getWork();
+  const sources = toSources(work);
+  return work.map((entry, i) => ({
     params: { slug: entry.id },
-    props: { entry },
+    props: {
+      entry,
+      source: sources.get(entry.id)!,
+      next: sources.get(work[(i + 1) % work.length].id)!,
+    },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, source, next } = Astro.props;
 const { Content } = await render(entry);
+const { title, outcome, client, role, period, stack, flow } = entry.data;
 ---
 
-<Base title={`${entry.data.title} — Rourke Paslovsky`} description={entry.data.outcome}>
+<Base title={`${title} — Rourke Paslovsky`} description={outcome}>
   <article>
-    <header class="study-header">
-      <h1>{entry.data.title}</h1>
-      <p class="study-outcome">{entry.data.outcome}</p>
-      <dl class="factrow">
-        {
-          entry.data.client && (
-            <div>
-              <dt>Client</dt>
-              <dd>{entry.data.client}</dd>
-            </div>
-          )
-        }
-        <div>
-          <dt>Role</dt>
-          <dd>{entry.data.role}</dd>
+    <header class="band band--dusk study-head">
+      <div class="wrap">
+        <a class="backlink" href="/#work">All work</a>
+        <div class="study-title-row">
+          <span class="study-n" aria-label={`Source ${source.n}`}>{source.n}</span>
+          <h1 class="study-title" style={`view-transition-name: title-${entry.id}`}>{title}</h1>
         </div>
-        <div>
-          <dt>Timeline</dt>
-          <dd>{entry.data.period}</dd>
-        </div>
-        <div class="fact-stack">
-          <dt>Stack</dt>
-          <dd>{entry.data.stack.join(', ')}</dd>
-        </div>
-      </dl>
+        <p class="study-outcome">{outcome}</p>
+      </div>
     </header>
-    <div class="prose">
-      <Content />
+
+    <div class="band band--petal study-body">
+      <div class="wrap study-grid">
+        <dl class="facts">
+          {
+            client && (
+              <div>
+                <dt>Client</dt>
+                <dd>{client}</dd>
+              </div>
+            )
+          }
+          <div>
+            <dt>Role</dt>
+            <dd>{role}</dd>
+          </div>
+          <div>
+            <dt>Timeline</dt>
+            <dd>{period}</dd>
+          </div>
+          <div>
+            <dt>Stack</dt>
+            <dd>
+              <ul class="stack-list" role="list">
+                {stack.map((item) => <li>{item}</li>)}
+              </ul>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="study-main">
+          {
+            flow && (
+              <section class="flow-section" aria-labelledby="flow-title">
+                <h2 id="flow-title">How it works</h2>
+                <ol class="flow" role="list">
+                  {flow.map((item) => (
+                    <li>
+                      <span class="flow-step">{item.step}</span>
+                      <span class="flow-detail">{item.detail}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )
+          }
+          <div class="prose">
+            <Content />
+          </div>
+        </div>
+      </div>
     </div>
-    <a class="backlink" href="/#work">Back to all work</a>
   </article>
+
+  <nav class="band band--gold next" aria-label="Next case study">
+    <div class="wrap">
+      <a href={next.href}>
+        <span class="next-label">Next case study</span>
+        <span class="next-title">{next.title}</span>
+      </a>
+    </div>
+  </nav>
 </Base>

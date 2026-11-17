@@ -5,6 +5,17 @@ client: "A mobile financial-services provider"
 role: "Sole engineer — design, build, rollout"
 period: "October to November 2026"
 stack: ["Next.js", "TypeScript", "WhatsApp Cloud API (direct)", "Supabase (Postgres, pgvector)", "Claude (Anthropic API)", "Voyage embeddings", "Vercel"]
+flow:
+  - step: "The agent messages first"
+    detail: "The coach never initiates, and only agents on the roster allow-list get replies."
+  - step: "The agent picks a language"
+    detail: "One of four. It is chosen, never guessed."
+  - step: "FAQ or free text"
+    detail: "Tappable FAQs built from the 38-slide training plan, or an open question."
+  - step: "A grounded answer"
+    detail: "The reused retrieval engine answers from approved material, with no financial advice."
+  - step: "Reporting"
+    detail: "Answer quality, knowledge gaps and cohort usage reach a shared dashboard."
 order: 3
 ---
 

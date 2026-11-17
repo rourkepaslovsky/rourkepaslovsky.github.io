@@ -5,6 +5,17 @@ client: "GAS Marketing (productised offering)"
 role: "Sole engineer — design, build, operations"
 period: "May 2026, ongoing"
 stack: ["TypeScript", "Next.js", "Supabase (Postgres, RLS, Realtime)", "Claude (Anthropic API)", "WhatsApp Cloud API", "Meta CAPI & Lead Ads", "Google Ads", "Zoho CRM", "Vercel"]
+flow:
+  - step: "A lead arrives"
+    detail: "From a landing page, a Meta lead form, WhatsApp, the web chatbot or a voice call."
+  - step: "The speaker converses"
+    detail: "A Claude-driven agent qualifies the lead in natural conversation. It never sees the scoring rubric."
+  - step: "The grader scores"
+    detail: "A separate model scores the conversation and writes the intelligence brief. It never speaks to the lead."
+  - step: "The dashboard ranks"
+    detail: "Sales-ready opportunities surface on a realtime dashboard for that tenant."
+  - step: "Signals flow back"
+    detail: "High scorers go to humans or get booked; conversions return to the CRM, Meta and Google."
 order: 1
 ---
 

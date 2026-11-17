@@ -5,6 +5,17 @@ client: "GAS Marketing (internal)"
 role: "Sole engineer"
 period: "September to November 2026"
 stack: ["Next.js", "TypeScript", "Supabase", "Resend (inbound & outbound email)", "Zod", "Vitest", "Vercel"]
+flow:
+  - step: "The statement arrives"
+    detail: "The accountant's monthly expense summary comes in by inbound email."
+  - step: "The sender is verified"
+    detail: "Only the email provider's DKIM/DMARC verdict is trusted."
+  - step: "Costs reconcile"
+    detail: "Known tools update automatically in the register."
+  - step: "Anomalies queue up"
+    detail: "New line items, jumps in spend and missing tools go to a short review list."
+  - step: "A human approves"
+    detail: "A person makes the judgment calls, and summary emails keep the team informed."
 order: 5
 ---
 

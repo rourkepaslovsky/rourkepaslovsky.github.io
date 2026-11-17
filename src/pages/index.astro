@@ -1,69 +1,138 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getCollection } from 'astro:content';
+import Cite from '../components/Cite.astro';
+import Ask from '../components/Ask.astro';
+import { getWork, toPassages, toSources } from '../lib/work';
 
-const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order
-);
+const work = await getWork();
+const sources = toSources(work);
+const src = (...ids: string[]) => ids.map((id) => sources.get(id));
+
+const statement = 'I build AI systems that companies run their business on.'.split(' ');
 ---
 
 <Base
   title="Rourke Paslovsky — AI Engineer"
   description="AI engineer in Johannesburg building production AI systems: multi-tenant lead qualification, grounded multilingual RAG, and WhatsApp-native agents."
 >
-  <section class="hero">
-    <h1>I build AI systems that companies run their business on.</h1>
-    <p class="standfirst">
-      AI Engineer at GAS Marketing in Johannesburg. In my first six months I
-      designed, built and shipped a multi-tenant lead-qualification platform,
-      two multilingual coaching products, and an AI-graded
-      learning portal — all in production, all with real users.
-    </p>
+  <section class="band band--dusk hero">
+    <div class="wrap">
+      <h1 class="statement">
+        {
+          statement.map((word, i) => (
+            <>
+              <span class="w" style={`--i:${i}`}>
+                <span>{word}</span>
+              </span>{' '}
+            </>
+          ))
+        }
+      </h1>
+
+      <div class="hero-row">
+        <div class="answer">
+          <p>
+            AI Engineer at GAS Marketing in Johannesburg. In my first six months I designed,
+            built and shipped a multi-tenant lead-qualification platform<Cite to={src('psi')} />,
+            two multilingual coaching products<Cite
+              to={src('field-coach', 'merchant-whatsapp-coach')}
+            />, and an AI-graded learning portal<Cite to={src('learning-portal')} />. All of
+            them are in production with real users.
+          </p>
+          <p class="answer-note">
+            The numbers are sources. Every claim on this site links to the case study behind it.
+          </p>
+        </div>
+
+        <Ask passages={toPassages(work)} sourceCount={work.length} />
+      </div>
+    </div>
   </section>
 
-  <section class="section" id="work">
-    <h2>Selected work</h2>
-    <ul class="work-list">
-      {
-        work.map((entry) => (
-          <li>
-            <a href={`/work/${entry.id}/`}>
-              <span class="entry-title">{entry.data.title}</span>
-              <p class="entry-outcome">{entry.data.outcome}</p>
-              <p class="entry-meta">
-                {entry.data.client ? `${entry.data.client}, ` : ''}
-                {entry.data.period}
-              </p>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+  <section class="band band--petal" id="work">
+    <div class="wrap">
+      <h2 class="band-title">Selected work</h2>
+      <ol class="work" role="list">
+        {
+          work.map((entry, i) => (
+            <li>
+              <a class="work-row" href={`/work/${entry.id}/`}>
+                <span class="work-n" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <span class="work-title" style={`view-transition-name: title-${entry.id}`}>
+                  {entry.data.title}
+                </span>
+                <span class="work-detail">
+                  <span class="work-outcome">{entry.data.outcome}</span>
+                  <span class="work-meta">
+                    {[entry.data.client, entry.data.period].filter(Boolean).join(', ')}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
   </section>
 
-  <section class="section about" id="about">
-    <h2>About</h2>
-    <p>
-      I came to engineering through analytics: I'm completing an MSc in
-      Business Analytics while working full-time as an AI engineer. That
-      combination shapes how I build — every system I ship has evaluation
-      harnesses, measurable outcomes, and a dashboard someone actually uses to
-      make decisions.
-    </p>
-    <p>
-      Three threads run through my work. Grounded retrieval: three of my
-      products answer only from approved source material, each with its own
-      eval suite, because in regulated and client-facing settings an
-      encouraging wrong answer is a failure. WhatsApp-native AI: I integrate
-      directly with Meta's Cloud API to put agents where South African users
-      already are, in their own languages — English, Afrikaans, isiZulu and
-      isiXhosa. And operational discipline: runbooks, rollback procedures,
-      secret rotation, and CI checks ship with the feature, not after it.
-    </p>
-    <p>
-      The fastest way to reach me is
-      <a href="mailto:rourke.paslovsky3@gmail.com">email</a>, or connect on
-      <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>.
-    </p>
+  <section class="band band--dusk about" id="about">
+    <div class="wrap about-grid">
+      <div>
+        <h2 class="band-title">About</h2>
+        <p class="lead">
+          I came to engineering through analytics: I'm completing an MSc in Business Analytics
+          while working full-time as an AI engineer. That combination shapes how I build. Every
+          system I ship has evaluation harnesses, measurable outcomes, and a dashboard someone
+          actually uses to make decisions.
+        </p>
+      </div>
+
+      <div class="threads">
+        <h3 class="threads-title">Three threads run through my work</h3>
+        <dl>
+          <div class="thread">
+            <dt>Grounded retrieval</dt>
+            <dd>
+              Three of my products answer only from approved source material, each with its own
+              eval suite<Cite to={src('field-coach', 'merchant-whatsapp-coach', 'learning-portal')} />.
+              In regulated and client-facing settings, an encouraging wrong answer is a failure.
+            </dd>
+          </div>
+          <div class="thread">
+            <dt>WhatsApp-native AI</dt>
+            <dd>
+              I integrate directly with Meta's Cloud API to put agents where South African users
+              already are, in their own languages: English, Afrikaans, isiZulu and isiXhosa<Cite
+                to={src('psi', 'merchant-whatsapp-coach')}
+              />.
+            </dd>
+          </div>
+          <div class="thread">
+            <dt>Operational discipline</dt>
+            <dd>
+              Runbooks, rollback procedures, secret rotation and CI checks ship with the feature,
+              not after it<Cite to={src('psi', 'tech-stack')} />.
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--gold contact" id="contact">
+    <div class="wrap">
+      <h2 class="contact-lead">The fastest way to reach me is email.</h2>
+      <a class="contact-email" href="mailto:rourke.paslovsky3@gmail.com">
+        rourke.paslovsky3<wbr />@gmail.com
+      </a>
+      <p class="contact-more">
+        Or connect on{' '}
+        <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>, or see
+        how this site is built on{' '}
+        <a href="https://github.com/rourkepaslovsky/rourkepaslovsky.github.io">GitHub</a>.
+      </p>
+    </div>
   </section>
 </Base>

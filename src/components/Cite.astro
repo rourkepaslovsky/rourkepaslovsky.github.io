@@ -1,0 +1,22 @@
+---
+import type { Source } from '../lib/work';
+
+interface Props {
+  /** One or more sources this claim rests on. Missing ones (unpublished) are skipped. */
+  to: (Source | undefined)[];
+}
+
+const sources = Astro.props.to.filter((s): s is Source => Boolean(s));
+---
+
+{
+  sources.length > 0 && (
+    <span class="cites">
+      {sources.map((s) => (
+        <a class="cite" href={s.href} aria-label={`Source ${s.n}: ${s.title}`} title={s.title} style={`--n:${s.n}`}>
+          {s.n}
+        </a>
+      ))}
+    </span>
+  )
+}
