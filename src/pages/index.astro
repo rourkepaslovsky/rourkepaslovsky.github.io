@@ -266,6 +266,8 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
     <p class="hud-clock" aria-hidden="true">Johannesburg <span data-hud-clock></span></p>
   </aside>
 
+  <button class="motion-toggle" type="button" data-motion hidden>Turn motion on</button>
+
   <script type="application/json" id="dots-data" set:html={dotsData} />
 </Base>
 
@@ -276,7 +278,16 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
   const raw = document.querySelector('#dots-data')?.textContent;
 
   if (canvas && raw) {
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // A device that asks for less motion gets a still page, and a switch to opt back in.
+    const asksForLess = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const remembered = () => {
+      try {
+        return localStorage.getItem('motion');
+      } catch {
+        return null;
+      }
+    };
+    let reduced = asksForLess && remembered() !== 'on';
     const dots = createDots(canvas, {
       ...JSON.parse(raw),
       font: '11px "DM Mono", ui-monospace, monospace',
@@ -325,21 +336,44 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
       }
     };
 
+    let lastScroll = scrollY;
     addEventListener(
       'scroll',
       () => {
+        dots.scroll(scrollY - lastScroll);
+        lastScroll = scrollY;
         pick();
         dots.refresh();
       },
       { passive: true }
     );
+
+    // Phones fire resize as the address bar slides away, so handle it once per frame.
+    let resizing = false;
     addEventListener('resize', () => {
-      dots.resize();
-      pick();
-      dots.refresh();
+      if (resizing) return;
+      resizing = true;
+      requestAnimationFrame(() => {
+        resizing = false;
+        dots.resize();
+        pick();
+        dots.refresh();
+      });
     });
-    addEventListener('pointermove', (event) => dots.pointer(event.clientX, event.clientY, event.pointerType === 'mouse'));
+
+    // Mouse: the dots part around the cursor. Touch: around the finger, for as long as it is down.
+    addEventListener('pointermove', (event) => {
+      if (event.pointerType === 'mouse') dots.pointer(event.clientX, event.clientY, true);
+    });
     document.documentElement.addEventListener('pointerleave', () => dots.pointer(0, 0, false));
+    const finger = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (touch) dots.pointer(touch.clientX, touch.clientY, true);
+    };
+    addEventListener('touchstart', finger, { passive: true });
+    addEventListener('touchmove', finger, { passive: true });
+    addEventListener('touchend', () => dots.pointer(0, 0, false), { passive: true });
+    addEventListener('touchcancel', () => dots.pointer(0, 0, false), { passive: true });
     addEventListener('pointerdown', (event) => dots.ripple(event.clientX, event.clientY));
     document.addEventListener('visibilitychange', () => (document.hidden ? dots.stop() : dots.start()));
 
@@ -353,6 +387,23 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
     for (const button of buttons) {
       button.addEventListener('click', () => {
         chapters[Number(button.dataset.goto)]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+      });
+    }
+
+    const motion = document.querySelector<HTMLButtonElement>('[data-motion]');
+    if (motion && asksForLess) {
+      const label = () => (motion.textContent = reduced ? 'Turn motion on' : 'Turn motion off');
+      motion.hidden = false;
+      label();
+      motion.addEventListener('click', () => {
+        reduced = !reduced;
+        try {
+          localStorage.setItem('motion', reduced ? 'off' : 'on');
+        } catch {
+          // Private browsing: the choice lasts for this visit only.
+        }
+        dots.setReduced(reduced);
+        label();
       });
     }
 

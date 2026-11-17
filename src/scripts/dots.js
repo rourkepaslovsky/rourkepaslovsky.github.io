@@ -140,7 +140,8 @@ function growBonsai(count, rand) {
  *   cities: {name:string, lat:number, lon:number}[], font: string, reduced: boolean }} options
  */
 export function createDots(canvas, options) {
-  const { counts, land, cities, reduced } = options;
+  const { counts, land, cities } = options;
+  let reduced = options.reduced;
   const ctx = canvas.getContext('2d');
   const N = counts.reduce((sum, c) => sum + c, 0);
   const rand = mulberry32(20260502);
@@ -264,6 +265,10 @@ export function createDots(canvas, options) {
   let clock = 0;
   let last = 0;
   let born = false;
+  let dprCap = 2;
+  let slowFrames = 0;
+  let energy = 0; // how hard the page is being scrolled, 0 to 1
+  let drift = 0; // recent scroll distance, decaying: the dots trail behind it
   const pointer = { x: 0, y: 0, on: false };
   const ripples = [];
   const decor = { trend: 0, globe: 0, calendar: 0, point: 0 };
@@ -289,11 +294,15 @@ export function createDots(canvas, options) {
   }
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, dprCap);
     W = window.innerWidth;
     H = window.innerHeight;
-    canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
+    const width = Math.round(W * dpr);
+    const height = Math.round(H * dpr);
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (!born) {
       for (let i = 0; i < N; i++) {
@@ -571,6 +580,8 @@ export function createDots(canvas, options) {
       decor[key] = snap ? goal : decor[key] + (goal - decor[key]) * 0.07;
     }
     for (let k = ripples.length - 1; k >= 0; k--) if (t - ripples[k].t > 1.7) ripples.splice(k, 1);
+    energy *= 0.93;
+    drift *= 0.86;
 
     const reach = 130;
     for (let i = 0; i < N; i++) {
@@ -580,9 +591,10 @@ export function createDots(canvas, options) {
       s[i] += (ts[i] - s[i]) * (snap ? 1 : 0.12);
       a[i] += (ta[i] - a[i]) * (snap ? 1 : 0.1);
 
+      // Scrolling stirs the dots: each trails the page by its own depth and brightens a little.
       let px = x[i];
-      let py = y[i];
-      let alpha = a[i];
+      let py = y[i] - drift * (0.04 + 0.2 * r3[i]);
+      let alpha = a[i] + 0.22 * energy * r1[i];
 
       if (pointer.on) {
         const dx = px - pointer.x;
@@ -626,10 +638,17 @@ export function createDots(canvas, options) {
 
   function loop(now) {
     if (!running) return;
-    const dt = Math.min(0.05, (now - last) / 1000 || 0);
+    const elapsed = (now - last) / 1000 || 0;
     last = now;
-    clock += dt;
+    clock += Math.min(0.05, elapsed);
     draw(false);
+    // A phone that cannot hold the frame rate gets a lighter canvas, not a stuttering one.
+    slowFrames = elapsed > 0.03 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+    if (slowFrames > 90 && dprCap > 1) {
+      dprCap -= 0.5;
+      slowFrames = 0;
+      resize();
+    }
     frame = requestAnimationFrame(loop);
   }
 
@@ -654,6 +673,27 @@ export function createDots(canvas, options) {
       pointer.x = px;
       pointer.y = py;
       pointer.on = on && !reduced;
+    },
+    /** The page scrolled by `delta` pixels. */
+    scroll(delta) {
+      if (reduced) return;
+      energy = Math.min(1, energy + Math.abs(delta) / 240);
+      drift = Math.max(-260, Math.min(260, drift + delta));
+    },
+    /** Switch between animated and still, for visitors who ask for less motion (or opt back in). */
+    setReduced(value) {
+      reduced = value;
+      if (reduced) {
+        api.stop();
+        pointer.on = false;
+        ripples.length = 0;
+        energy = 0;
+        drift = 0;
+        clock = 6;
+        draw(true);
+      } else {
+        api.start();
+      }
     },
     /** Reduced motion: redraw in place, for instance after a scroll. */
     refresh() {

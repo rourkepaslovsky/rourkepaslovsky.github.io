@@ -231,6 +231,29 @@ a:hover {
   transform: scale(2);
 }
 
+/* Shown only when the device asks for reduced motion: the page is still by default, and this opts back in. */
+.motion-toggle {
+  position: fixed;
+  right: var(--gutter);
+  bottom: 3.4rem;
+  z-index: 11;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 99px;
+  background: rgb(0 0 0 / 0.8);
+  color: var(--bright);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.motion-toggle:hover {
+  border-color: var(--white);
+  color: var(--white);
+}
+
 /* ——— Shared type ——— */
 .display,
 .chapter h2,
@@ -1072,8 +1095,38 @@ a.cite:hover {
     grid-column: 1 / -1;
   }
 
-  .hud {
+  /* Phones keep the chapter dots, laid along the bottom edge. */
+  .hud-chapter,
+  .hud-clock {
     display: none;
+  }
+
+  .hud::after {
+    height: 4rem;
+  }
+
+  .dotnav {
+    top: auto;
+    right: auto;
+    bottom: 0.7rem;
+    left: 50%;
+    grid-auto-flow: column;
+    gap: 0.15rem;
+    transform: translateX(-50%);
+  }
+
+  .scroll-cue {
+    bottom: 2.6rem;
+  }
+
+  .scroll-cue::after {
+    display: none;
+  }
+
+  .motion-toggle {
+    right: 50%;
+    bottom: 2.4rem;
+    transform: translateX(50%);
   }
 
   .days-head {
