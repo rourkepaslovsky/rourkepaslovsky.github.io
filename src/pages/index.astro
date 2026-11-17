@@ -386,6 +386,20 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
       });
     }
 
+    // Links to a section of this page scroll there without adding #section to the address,
+    // so the link in the address bar is always the one that opens at the top.
+    document.addEventListener('click', (event) => {
+      const link = (event.target as Element | null)?.closest?.('a');
+      // The skip link keeps its native behaviour: it has to move keyboard focus, not only scroll.
+      if (!link || link.classList.contains('skip') || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      const url = new URL(link.href, location.href);
+      if (url.origin !== location.origin || url.pathname !== location.pathname || !url.hash) return;
+      const target = document.querySelector(url.hash);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    });
+
     for (const button of buttons) {
       button.addEventListener('click', () => {
         chapters[Number(button.dataset.goto)]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
@@ -421,6 +435,10 @@ const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).r
     };
     tick();
     setInterval(tick, 20000);
+
+    // Arrived from a case study's "All work": open at that section (see the script in Base.astro).
+    const openAt = (window as unknown as { __openAt?: string }).__openAt;
+    if (openAt) document.querySelector(openAt)?.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
 
     document.fonts.ready.then(() => dots.refresh());
     pick();

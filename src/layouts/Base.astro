@@ -34,6 +34,38 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:image" content={new URL('/og.png', Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      // The home page always opens at the top: a shared link must land on the hero.
+      // Runs before the page is laid out, so there is no jump.
+      (() => {
+        if (location.pathname !== '/') return;
+        const entry = performance.getEntriesByType('navigation')[0];
+        const type = entry ? entry.type : 'navigate';
+        // Coming back with the Back button is the one case where the visitor keeps their place.
+        if (type === 'back_forward') return;
+
+        let fromThisSite = false;
+        try {
+          fromThisSite = Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
+        } catch {}
+
+        // "All work" on a case study is the only way to open at a section, and even then
+        // the #section is taken off the address so it cannot be copied into a shared link.
+        if (location.hash && fromThisSite && type === 'navigate') window.__openAt = location.hash;
+        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+
+        history.scrollRestoration = 'manual';
+        const top = () => {
+          if (!window.__openAt) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        };
+        top();
+        window.addEventListener('pageshow', (event) => {
+          if (!event.persisted) top();
+        });
+        // Once open, hand scroll memory back to the browser so Back from a case study works.
+        window.addEventListener('load', () => setTimeout(() => (history.scrollRestoration = 'auto'), 0));
+      })();
+    </script>
   </head>
   <body class:list={{ 'has-floor': floor }}>
     <a class="skip" href="#main">Skip to content</a>
