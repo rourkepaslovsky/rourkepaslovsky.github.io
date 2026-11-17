@@ -1,0 +1,69 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+<Base
+  title="Rourke Paslovsky — AI Engineer"
+  description="AI engineer in Johannesburg building production AI systems: multi-tenant lead qualification, grounded multilingual RAG, and WhatsApp-native agents."
+>
+  <section class="hero">
+    <h1>I build AI systems that companies run their business on.</h1>
+    <p class="standfirst">
+      AI Engineer at GAS Marketing in Johannesburg. In my first six months I
+      designed, built and shipped a multi-tenant lead-qualification platform,
+      two multilingual coaching products, and an AI-graded
+      learning portal — all in production, all with real users.
+    </p>
+  </section>
+
+  <section class="section" id="work">
+    <h2>Selected work</h2>
+    <ul class="work-list">
+      {
+        work.map((entry) => (
+          <li>
+            <a href={`/work/${entry.id}/`}>
+              <span class="entry-title">{entry.data.title}</span>
+              <p class="entry-outcome">{entry.data.outcome}</p>
+              <p class="entry-meta">
+                {entry.data.client ? `${entry.data.client}, ` : ''}
+                {entry.data.period}
+              </p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="section about" id="about">
+    <h2>About</h2>
+    <p>
+      I came to engineering through analytics: I'm completing an MSc in
+      Business Analytics while working full-time as an AI engineer. That
+      combination shapes how I build — every system I ship has evaluation
+      harnesses, measurable outcomes, and a dashboard someone actually uses to
+      make decisions.
+    </p>
+    <p>
+      Three threads run through my work. Grounded retrieval: three of my
+      products answer only from approved source material, each with its own
+      eval suite, because in regulated and client-facing settings an
+      encouraging wrong answer is a failure. WhatsApp-native AI: I integrate
+      directly with Meta's Cloud API to put agents where South African users
+      already are, in their own languages — English, Afrikaans, isiZulu and
+      isiXhosa. And operational discipline: runbooks, rollback procedures,
+      secret rotation, and CI checks ship with the feature, not after it.
+    </p>
+    <p>
+      The fastest way to reach me is
+      <a href="mailto:rourke.paslovsky3@gmail.com">email</a>, or connect on
+      <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>.
+    </p>
+  </section>
+</Base>

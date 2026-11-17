@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const work = await getCollection('work', ({ data }) => !data.draft);
+  return work.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={`${entry.data.title} — Rourke Paslovsky`} description={entry.data.outcome}>
+  <article>
+    <header class="study-header">
+      <h1>{entry.data.title}</h1>
+      <p class="study-outcome">{entry.data.outcome}</p>
+      <dl class="factrow">
+        {
+          entry.data.client && (
+            <div>
+              <dt>Client</dt>
+              <dd>{entry.data.client}</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt>Role</dt>
+          <dd>{entry.data.role}</dd>
+        </div>
+        <div>
+          <dt>Timeline</dt>
+          <dd>{entry.data.period}</dd>
+        </div>
+        <div class="fact-stack">
+          <dt>Stack</dt>
+          <dd>{entry.data.stack.join(', ')}</dd>
+        </div>
+      </dl>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+    <a class="backlink" href="/#work">Back to all work</a>
+  </article>
+</Base>
