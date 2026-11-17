@@ -26,7 +26,7 @@ export function toSources(work: Work[]): Map<string, Source> {
 }
 
 export interface Passage {
-  /** Citation label: a case-study number, or "A" for the About section. */
+  /** Citation label: a case-study number, or "S" for the story on the home page. */
   n: number | string;
   href: string;
   title: string;
@@ -73,13 +73,28 @@ export function toPassages(work: Work[]): Passage[] {
     }
   }
 
-  // Facts from the home page, so basic questions about me have a source too.
-  for (const text of [
-    'AI Engineer at GAS Marketing in Johannesburg, South Africa.',
-    "I came to engineering through analytics: I'm completing an MSc in Business Analytics while working full-time as an AI engineer.",
-    'The fastest way to reach me is email, at rourke.paslovsky3@gmail.com, or connect on LinkedIn.',
-  ]) {
-    passages.push({ n: 'A', href: '/#about', title: 'About', section: 'home page', text });
+  // Facts from the story on the home page, so questions about me have a source too.
+  const story: [string, string, string][] = [
+    ['/#top', 'Noise', 'I am Rourke Paslovsky, an AI engineer at GAS Marketing in Johannesburg, South Africa.'],
+    [
+      '/#signal',
+      'Signal',
+      'I joined GAS Marketing as an account manager intern, to get work experience while I studied. They noticed the interest and the data skills, and moved me into a new role: AI engineer.',
+    ],
+    [
+      '/#distance',
+      'Distance',
+      "I'm completing an MSc in Business Analytics at Edinburgh Business School, online from Johannesburg, while working as an AI engineer.",
+    ],
+    [
+      '/#roots',
+      'Roots',
+      'Outside the work: chess, bonsai and house plants, and calisthenics. Three slow disciplines that reward small, deliberate moves that compound.',
+    ],
+    ['/#contact', 'Now', 'The fastest way to reach me is email, at rourke.paslovsky3@gmail.com, or connect on LinkedIn.'],
+  ];
+  for (const [href, section, text] of story) {
+    passages.push({ n: 'S', href, title: 'My story', section, text });
   }
 
   return passages;

@@ -1,64 +1,162 @@
 ---
+import fs from 'node:fs';
+import path from 'node:path';
 import Base from '../layouts/Base.astro';
 import Cite from '../components/Cite.astro';
 import Ask from '../components/Ask.astro';
 import { getWork, toPassages, toSources } from '../lib/work';
+import activity from '../data/activity.json';
+import land from '../data/land.json';
 
 const work = await getWork();
 const sources = toSources(work);
 const src = (...ids: string[]) => ids.map((id) => sources.get(id));
 
-const statement = 'I build AI systems that companies run their business on.'.split(' ');
+// ——— The numbers behind the dots, all computed from the commit data ———
+const counts: number[] = activity.counts;
+const total = counts.reduce((sum, c) => sum + c, 0);
+const activeDays = counts.filter(Boolean).length;
+const dayAt = (index: number) => new Date(new Date(`${activity.from}T00:00:00Z`).getTime() + index * 86400000);
+const dayMonth = (date: Date) => date.toLocaleString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+const busiest = Math.max(...counts);
+const busiestDay = dayMonth(dayAt(counts.indexOf(busiest)));
+const firstDay = dayAt(0).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const number = (n: number) => n.toLocaleString('en-GB');
+
+const cities = [
+  { name: 'Johannesburg', lat: -26.2041, lon: 28.0473 },
+  { name: 'Edinburgh', lat: 55.9533, lon: -3.1883 },
+];
+const rad = Math.PI / 180;
+const haversine =
+  Math.sin(((cities[1].lat - cities[0].lat) * rad) / 2) ** 2 +
+  Math.cos(cities[0].lat * rad) * Math.cos(cities[1].lat * rad) * Math.sin(((cities[1].lon - cities[0].lon) * rad) / 2) ** 2;
+const distanceKm = Math.round((2 * 6371 * Math.asin(Math.sqrt(haversine))) / 10) * 10;
+const coordinate = (c: (typeof cities)[number]) =>
+  `${Math.abs(c.lat).toFixed(2)}°${c.lat < 0 ? 'S' : 'N'} ${Math.abs(c.lon).toFixed(2)}°${c.lon < 0 ? 'W' : 'E'}`;
+
+// Drop a photo at public/rourke.jpg and it appears in the "Roots" chapter.
+const hasPhoto = fs.existsSync(path.join(process.cwd(), 'public', 'rourke.jpg'));
+
+const chapters = ['Noise', 'Signal', 'Distance', 'Days', 'Work', 'Method', 'Roots', 'Now'];
+const mark = (i: number) => String(i).padStart(2, '0');
+const dotsData = JSON.stringify({ counts, from: activity.from, land, cities }).replace(/</g, '\\u003c');
 ---
 
 <Base
   title="Rourke Paslovsky — AI Engineer"
-  description="AI engineer in Johannesburg building production AI systems: multi-tenant lead qualification, grounded multilingual RAG, and WhatsApp-native agents."
+  description={`AI engineer in Johannesburg. A story told in ${number(total)} dots, one for every commit: from account manager intern to building the AI systems companies run on.`}
 >
-  <section class="band band--dusk hero">
-    <div class="wrap">
-      <h1 class="statement">
-        {
-          statement.map((word, i) => (
-            <>
-              <span class="w" style={`--i:${i}`}>
-                <span>{word}</span>
-              </span>{' '}
-            </>
-          ))
-        }
-      </h1>
+  <canvas id="dots" aria-hidden="true"></canvas>
 
-      <div class="hero-row">
-        <div class="answer">
-          <p>
-            AI Engineer at GAS Marketing in Johannesburg. In my first six months I designed,
-            built and shipped a multi-tenant lead-qualification platform<Cite to={src('psi')} />,
-            two multilingual coaching products<Cite
-              to={src('field-coach', 'merchant-whatsapp-coach')}
-            />, and an AI-graded learning portal<Cite to={src('learning-portal')} />. All of
-            them are in production with real users.
-          </p>
-          <p class="answer-note">
-            The numbers are sources. Every claim on this site links to the case study behind it.
-          </p>
-        </div>
-
-        <Ask passages={toPassages(work)} sourceCount={work.length} />
+  <section class="chapter chapter--hero" data-formation="field" data-title={chapters[0]} id="top">
+    <div class="chapter-inner">
+      <div class="hero-text" data-pocket>
+        <h1 class="display">I build AI systems that companies run their business on.</h1>
+        <p class="hero-lede">
+          I'm Rourke Paslovsky, an AI engineer in Johannesburg. Every dot on this page is one
+          commit I've made since May 2026. There are {number(total)} of them. Scroll, and they'll
+          show you how I got here.
+        </p>
       </div>
+    </div>
+    <p class="scroll-cue" aria-hidden="true">Scroll</p>
+  </section>
+
+  <section class="chapter" data-formation="trend" data-title={chapters[1]} id="signal">
+    <div class="chapter-inner">
+      <div class="chapter-text">
+        <p class="mark"><span>{mark(1)}</span>{chapters[1]}</p>
+        <h2>It started as an internship.</h2>
+        <p>
+          I joined GAS Marketing as an account manager intern, to get work experience while I
+          studied. What I kept reaching for was the data. They noticed the interest and the
+          skills, and moved me into a new role: AI engineer.
+        </p>
+        <p class="aside">Finding the pattern in the noise turned out to be the job.</p>
+      </div>
+      <div class="stage" aria-hidden="true"></div>
     </div>
   </section>
 
-  <section class="band band--petal" id="work">
-    <div class="wrap">
-      <h2 class="band-title">Selected work</h2>
+  <section class="chapter chapter--flip" data-formation="globe" data-title={chapters[2]} id="distance">
+    <div class="chapter-inner">
+      <div class="chapter-text">
+        <p class="mark"><span>{mark(2)}</span>{chapters[2]}</p>
+        <h2>Studying in Edinburgh, from Johannesburg.</h2>
+        <p>
+          I'm completing an MSc in Business Analytics at Edinburgh Business School, online,
+          while working as an AI engineer. The combination shapes how I build: every system I
+          ship has evaluation harnesses, measurable outcomes, and a dashboard someone actually
+          uses to make decisions.
+        </p>
+        <dl class="readout">
+          <div>
+            <dt>Johannesburg</dt>
+            <dd class="readout-small">{coordinate(cities[0])}</dd>
+          </div>
+          <div>
+            <dt>Edinburgh</dt>
+            <dd class="readout-small">{coordinate(cities[1])}</dd>
+          </div>
+          <div>
+            <dt>Between them</dt>
+            <dd>{number(distanceKm)} km</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="stage" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="chapter chapter--stack" data-formation="calendar" data-title={chapters[3]} id="days">
+    <div class="chapter-inner">
+      <div class="days-head">
+        <div class="chapter-text chapter-text--wide">
+          <p class="mark"><span>{mark(3)}</span>{chapters[3]}</p>
+          <h2>Six months, six systems.</h2>
+          <p>
+            The same dots, in the order I made them: one cluster for each day since my first
+            commit on {firstDay}. In that time I designed, built and shipped a multi-tenant
+            lead-qualification platform<Cite to={src('psi')} />, two multilingual coaching
+            products<Cite to={src('field-coach', 'merchant-whatsapp-coach')} />, an AI-graded
+            learning portal<Cite to={src('learning-portal')} /> and an internal finance
+            tool<Cite to={src('tech-stack')} />, all in production with real users. And, for
+            Fridays, a party game<Cite to={src('impostor')} />.
+          </p>
+        </div>
+        <dl class="readout readout--stack">
+          <div>
+            <dt>Commits</dt>
+            <dd>{number(total)}</dd>
+          </div>
+          <div>
+            <dt>Days with a commit</dt>
+            <dd>{activeDays} <span class="readout-of">of {counts.length}</span></dd>
+          </div>
+          <div>
+            <dt>Busiest day</dt>
+            <dd>{busiest} <span class="readout-of">on {busiestDay}</span></dd>
+          </div>
+        </dl>
+      </div>
+      <div class="stage stage--wide" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="chapter chapter--wide" data-formation="grid" data-title={chapters[4]} id="work">
+    <div class="chapter-inner">
+      <div class="chapter-head">
+        <p class="mark"><span>{mark(4)}</span>{chapters[4]}</p>
+        <h2>What the dots built.</h2>
+      </div>
       <ol class="work" role="list">
         {
           work.map((entry, i) => (
             <li>
               <a class="work-row" href={`/work/${entry.id}/`}>
                 <span class="work-n" aria-hidden="true">
-                  {i + 1}
+                  {mark(i + 1)}
                 </span>
                 <span class="work-title" style={`view-transition-name: title-${entry.id}`}>
                   {entry.data.title}
@@ -74,65 +172,205 @@ const statement = 'I build AI systems that companies run their business on.'.spl
           ))
         }
       </ol>
+
+      <Ask passages={toPassages(work)} sourceCount={work.length} />
     </div>
   </section>
 
-  <section class="band band--dusk about" id="about">
-    <div class="wrap about-grid">
-      <div>
-        <h2 class="band-title">About</h2>
-        <p class="lead">
-          I came to engineering through analytics: I'm completing an MSc in Business Analytics
-          while working full-time as an AI engineer. That combination shapes how I build. Every
-          system I ship has evaluation harnesses, measurable outcomes, and a dashboard someone
-          actually uses to make decisions.
+  <section class="chapter chapter--wide" data-formation="grid" data-title={chapters[5]} id="method">
+    <div class="chapter-inner">
+      <div class="chapter-head">
+        <p class="mark"><span>{mark(5)}</span>{chapters[5]}</p>
+        <h2>Three things I keep doing.</h2>
+      </div>
+      <dl class="threads">
+        <div class="thread">
+          <dt>Grounded retrieval</dt>
+          <dd>
+            Three of my products answer only from approved source material, each with its own
+            eval suite<Cite to={src('field-coach', 'merchant-whatsapp-coach', 'learning-portal')} />.
+            In regulated and client-facing settings, an encouraging wrong answer is a failure.
+          </dd>
+        </div>
+        <div class="thread">
+          <dt>WhatsApp-native AI</dt>
+          <dd>
+            I integrate directly with Meta's Cloud API to put agents where South African users
+            already are, in their own languages: English, Afrikaans, isiZulu and isiXhosa<Cite
+              to={src('psi', 'merchant-whatsapp-coach')}
+            />.
+          </dd>
+        </div>
+        <div class="thread">
+          <dt>Operational discipline</dt>
+          <dd>
+            Runbooks, rollback procedures, secret rotation and CI checks ship with the feature,
+            not after it<Cite to={src('psi', 'tech-stack')} />.
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="chapter" data-formation="bonsai" data-title={chapters[6]} id="roots">
+    <div class="chapter-inner">
+      <div class="chapter-text">
+        <p class="mark"><span>{mark(6)}</span>{chapters[6]}</p>
+        <h2>Outside the work.</h2>
+        <p>
+          Chess. Bonsai and house plants. Calisthenics. Three slow disciplines: none of them
+          can be rushed, and each one rewards small, deliberate moves that compound. I try to
+          build software the same way.
+        </p>
+        {
+          hasPhoto && (
+            <img class="portrait" src="/rourke.jpg" alt="Rourke Paslovsky" loading="lazy" decoding="async" />
+          )
+        }
+      </div>
+      <div class="stage" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="chapter chapter--end" data-formation="point" data-title={chapters[7]} id="contact">
+    <div class="chapter-inner">
+      <div class="stage stage--point" aria-hidden="true"></div>
+      <div class="chapter-text chapter-text--centre">
+        <p class="mark"><span>{mark(7)}</span>{chapters[7]}</p>
+        <h2>That's the story so far.</h2>
+        <p>
+          {number(total)} commits, back to a single point. This site is a record, and it grows
+          as the work does.
+        </p>
+        <p class="links">
+          <a href="mailto:rourke.paslovsky3@gmail.com">rourke.paslovsky3@gmail.com</a>
+          <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>
+          <a href="https://github.com/rourkepaslovsky">GitHub</a>
         </p>
       </div>
-
-      <div class="threads">
-        <h3 class="threads-title">Three threads run through my work</h3>
-        <dl>
-          <div class="thread">
-            <dt>Grounded retrieval</dt>
-            <dd>
-              Three of my products answer only from approved source material, each with its own
-              eval suite<Cite to={src('field-coach', 'merchant-whatsapp-coach', 'learning-portal')} />.
-              In regulated and client-facing settings, an encouraging wrong answer is a failure.
-            </dd>
-          </div>
-          <div class="thread">
-            <dt>WhatsApp-native AI</dt>
-            <dd>
-              I integrate directly with Meta's Cloud API to put agents where South African users
-              already are, in their own languages: English, Afrikaans, isiZulu and isiXhosa<Cite
-                to={src('psi', 'merchant-whatsapp-coach')}
-              />.
-            </dd>
-          </div>
-          <div class="thread">
-            <dt>Operational discipline</dt>
-            <dd>
-              Runbooks, rollback procedures, secret rotation and CI checks ship with the feature,
-              not after it<Cite to={src('psi', 'tech-stack')} />.
-            </dd>
-          </div>
-        </dl>
-      </div>
     </div>
   </section>
 
-  <section class="band band--gold contact" id="contact">
-    <div class="wrap">
-      <h2 class="contact-lead">The fastest way to reach me is email.</h2>
-      <a class="contact-email" href="mailto:rourke.paslovsky3@gmail.com">
-        rourke.paslovsky3<wbr />@gmail.com
-      </a>
-      <p class="contact-more">
-        Or connect on{' '}
-        <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>, or see
-        how this site is built on{' '}
-        <a href="https://github.com/rourkepaslovsky/rourkepaslovsky.github.io">GitHub</a>.
-      </p>
-    </div>
-  </section>
+  <aside class="hud" aria-label="Story position">
+    <p class="hud-chapter" data-hud-chapter aria-hidden="true">
+      <span data-hud-index>00</span>
+      <span data-hud-title>{chapters[0]}</span>
+    </p>
+    <nav class="dotnav" aria-label="Chapters">
+      {
+        chapters.map((title, i) => (
+          <button type="button" data-goto={i} aria-label={`${mark(i)} ${title}`} title={title} />
+        ))
+      }
+    </nav>
+    <p class="hud-clock" aria-hidden="true">Johannesburg <span data-hud-clock></span></p>
+  </aside>
+
+  <script type="application/json" id="dots-data" set:html={dotsData} />
 </Base>
+
+<script>
+  import { createDots } from '../scripts/dots.js';
+
+  const canvas = document.querySelector<HTMLCanvasElement>('#dots');
+  const raw = document.querySelector('#dots-data')?.textContent;
+
+  if (canvas && raw) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dots = createDots(canvas, {
+      ...JSON.parse(raw),
+      font: '11px "DM Mono", ui-monospace, monospace',
+      reduced,
+    });
+
+    const chapters = [...document.querySelectorAll<HTMLElement>('[data-formation]')];
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-goto]')];
+    const hudIndex = document.querySelector('[data-hud-index]');
+    const hudTitle = document.querySelector('[data-hud-title]');
+    const fullBleed = new Set(['field', 'grid']);
+    let active: HTMLElement | null = null;
+
+    const apply = () => {
+      if (!active) return;
+      const name = active.dataset.formation!;
+      const stage = active.querySelector<HTMLElement>('.stage');
+      const pocket = active.querySelector<HTMLElement>('[data-pocket]');
+      dots.setFormation(
+        name,
+        fullBleed.has(name) || !stage ? null : () => stage.getBoundingClientRect(),
+        pocket ? () => pocket.getBoundingClientRect() : null
+      );
+      const index = chapters.indexOf(active);
+      if (hudIndex) hudIndex.textContent = String(index).padStart(2, '0');
+      if (hudTitle) hudTitle.textContent = active.dataset.title ?? '';
+      buttons.forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
+    };
+
+    // The active chapter is the one under the middle of the screen.
+    const pick = () => {
+      const mid = innerHeight / 2;
+      let best: HTMLElement | null = null;
+      let distance = Infinity;
+      for (const chapter of chapters) {
+        const box = chapter.getBoundingClientRect();
+        const d = box.top <= mid && box.bottom >= mid ? 0 : Math.min(Math.abs(box.top - mid), Math.abs(box.bottom - mid));
+        if (d < distance) {
+          distance = d;
+          best = chapter;
+        }
+      }
+      if (best !== active) {
+        active = best;
+        apply();
+      }
+    };
+
+    addEventListener(
+      'scroll',
+      () => {
+        pick();
+        dots.refresh();
+      },
+      { passive: true }
+    );
+    addEventListener('resize', () => {
+      dots.resize();
+      pick();
+      dots.refresh();
+    });
+    addEventListener('pointermove', (event) => dots.pointer(event.clientX, event.clientY, event.pointerType === 'mouse'));
+    document.documentElement.addEventListener('pointerleave', () => dots.pointer(0, 0, false));
+    addEventListener('pointerdown', (event) => dots.ripple(event.clientX, event.clientY));
+    document.addEventListener('visibilitychange', () => (document.hidden ? dots.stop() : dots.start()));
+
+    // Hovering a case study sends a ripple through the floor from that row.
+    for (const row of document.querySelectorAll<HTMLElement>('.work-row')) {
+      row.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'mouse') dots.ripple(event.clientX, event.clientY);
+      });
+    }
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        chapters[Number(button.dataset.goto)]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+      });
+    }
+
+    const clock = document.querySelector('[data-hud-clock]');
+    const tick = () => {
+      if (clock) {
+        clock.textContent = new Intl.DateTimeFormat('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Africa/Johannesburg',
+        }).format(new Date());
+      }
+    };
+    tick();
+    setInterval(tick, 20000);
+
+    document.fonts.ready.then(() => dots.refresh());
+    pick();
+    dots.start();
+  }
+</script>

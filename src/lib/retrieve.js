@@ -18,7 +18,8 @@ const STOP = new Set(
   sure able possible well way ways lot lots bit something anything everything someone anyone
   people person stuff look looking see think feel say said talk talking mean means come go going
   take put try new big small main key overall general generally specific specifically example
-  examples biggest favourite favorite proud proudest most interesting`.split(/\s+/)
+  examples biggest favourite favorite proud proudest most interesting play plays playing enjoy
+  enjoys love loves`.split(/\s+/)
 );
 
 // Query expansion: everyday words mapped to the vocabulary the case studies use.
@@ -74,8 +75,7 @@ const EXPAND = {
   ops: ['runbooks', 'rollback', 'rotation', 'incident'],
   operations: ['runbooks', 'rollback', 'rotation', 'incident'],
   reliability: ['runbooks', 'rollback', 'sentinels', 'incident'],
-  fun: ['game', 'party', 'laughing'],
-  hobby: ['game', 'party', 'side'],
+  fun: ['game', 'party', 'chess'],
   game: ['impostor', 'party', 'multiplayer'],
   grading: ['grades', 'graded', 'rubrics'],
   education: ['students', 'learning', 'curriculum'],
@@ -83,13 +83,28 @@ const EXPAND = {
   automation: ['automatically', 'reconciles', 'scheduled'],
   agents: ['watchtower', 'scheduled', 'agent'],
   voice: ['calls', 'voice'],
-  study: ['msc', 'analytics'],
+  hobby: ['chess', 'bonsai', 'calisthenics'],
+  hobbies: ['chess', 'bonsai', 'calisthenics'],
+  interests: ['chess', 'bonsai', 'calisthenics'],
+  outside: ['chess', 'bonsai', 'calisthenics'],
+  free: ['chess', 'bonsai', 'calisthenics'],
+  plants: ['bonsai'],
+  gym: ['calisthenics'],
+  exercise: ['calisthenics'],
+  sport: ['calisthenics', 'chess'],
+  intern: ['intern', 'account'],
+  internship: ['intern', 'account'],
+  started: ['intern', 'joined'],
+  start: ['intern', 'joined'],
+  career: ['intern', 'engineer', 'role'],
+  school: ['edinburgh', 'msc'],
+  studying: ['msc', 'edinburgh'],
+  study: ['msc', 'analytics', 'edinburgh'],
   studied: ['msc', 'analytics'],
-  studying: ['msc', 'analytics'],
-  degree: ['msc', 'analytics'],
+  degree: ['msc', 'analytics', 'edinburgh'],
   qualification: ['msc', 'analytics'],
   qualifications: ['msc', 'analytics'],
-  university: ['msc', 'analytics'],
+  university: ['msc', 'edinburgh'],
   masters: ['msc', 'analytics'],
   background: ['msc', 'analytics', 'engineer'],
   based: ['johannesburg'],

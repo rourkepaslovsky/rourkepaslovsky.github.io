@@ -1,15 +1,19 @@
 ---
-import '@fontsource-variable/bricolage-grotesque/standard.css';
+import '@fontsource-variable/sora';
 import '@fontsource-variable/newsreader/standard.css';
 import '@fontsource-variable/newsreader/standard-italic.css';
+import '@fontsource/dm-mono/300.css';
+import '@fontsource/dm-mono/400.css';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description: string;
+  /** Pages without the dot canvas get a static dot floor instead. */
+  floor?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, floor = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -21,7 +25,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="theme-color" content="#231a3f" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -30,30 +35,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body>
+  <body class:list={{ 'has-floor': floor }}>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
-      <div class="wrap">
-        <a class="site-name" href="/">Rourke Paslovsky</a>
-        <nav aria-label="Main">
-          <a href="/#work">Work</a>
-          <a href="/#about">About</a>
-          <a href="/#contact">Contact</a>
-        </nav>
-      </div>
+      <a class="site-name" href="/">Rourke Paslovsky</a>
+      <nav aria-label="Main">
+        <a href="/#work">Work</a>
+        <a href="/#contact">Contact</a>
+      </nav>
     </header>
     <main id="main">
       <slot />
     </main>
-    <footer class="site-footer">
-      <div class="wrap">
-        <span>Johannesburg, South Africa</span>
-        <span class="site-footer-links">
-          <a href="https://www.linkedin.com/in/rourke-paslovsky-5467582a9/">LinkedIn</a>
-          <a href="https://github.com/rourkepaslovsky">GitHub</a>
-          <a href="mailto:rourke.paslovsky3@gmail.com">Email</a>
-        </span>
-      </div>
-    </footer>
   </body>
 </html>
